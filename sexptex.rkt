@@ -48,6 +48,10 @@
 (define (^^ . body)
   ($ "^{" body "}"))
 
+;; ⋃ : Math × Math → Math ∩ Text
+(define (⋃ range body)
+  (~ "\\bigcup\\limits_{" range "}" body))
+
 (define ($ . body)
   (bs 'ensuremath body))
 
@@ -58,6 +62,17 @@
 
 (define end "\\\\\n")
 (define ¶ "\n\n")
+
+(define (ital . texts)
+  (~ (bs 'textit texts )))
+
+(define (bold . texts)
+  (~ (bs 'textbf texts )))
+
+(define-syntax-rule (items (item-parts ...) ...)
+  (env 'itemize
+       (~ (bs 'item) item-parts ...) ...
+       ))
 
 ;; requires mathpartir
 (define (mathpar . parts)
