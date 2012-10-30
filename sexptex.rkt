@@ -52,8 +52,18 @@
 (define (⋃ range body)
   (~ "\\bigcup\\limits_{" range "}" body))
 
+;; ⋃s : Math → Math ∩ Text
+(define (⋃s body)
+  (~ "\\bigcup" body))
+
 (define ($ . body)
   (bs 'ensuremath body))
+
+(define (text . txt)
+  (bs 'textup txt))
+
+(define ($$ . body)
+  (~ "\\[" body "\\]"))
 
 (define (env name . body)
   `(,(bs 'begin (symbol->string name)) "\n"
@@ -120,11 +130,19 @@
 (define |[]| |[|)
 (define |{}| |{|)
 (define 〈〉 angle)
+(define (〚〛 . elts) ;;requires stmaryrd
+  (~ "\\left〚" elts "\\right〛"))
+(define interp 〚〛)
 
-(define (interp . elts) ;;requires stmaryrd
-  (~ "\\left\\llbracket" elts "\\right\\rrbracket"))
+
 (define (abs . elts)
   (~ "\\left|" elts "\\right|"))
+
+(define (∀ binder #:st [such-that #f] body)
+  (~ "∀" binder (if such-that (~ ", " such-that) "") "." body))
+(define (∃ binder #:st [such-that #f] body)
+  (~ "∃" binder (if such-that (~ ", " such-that) "") "." body))
+
 
 
 ;; mathematical conditional
@@ -368,6 +386,7 @@
            [(#\∝) (mathify "\\propto")]
            [(#\⊢) (mathify "\\vdash")]
            [(#\⊣) (mathify "\\dashv")]
+           [(#\⋆) (mathify "\\star")]
            [(#\☠) (mathify "\\skull")]
            [(#\☺) (mathify "\\smiley")]
            [(#\☻) (mathify "\\blacksmiley")]
