@@ -18,12 +18,17 @@
 
 
 
-(define (str-flatten . sexp)
+(define (sexp->tex . sexp)
   (string-append*
    (map
     translate-char
-    (string->list
-     (string-append* (flatten sexp))))))
+    ;(string->list (str-flatten sexp))
+    (string->list (string-append* (flatten sexp))))))
+
+(define (str-flatten . sexp) ;; why does this diverge?
+  (match sexp
+    [`(,sub-sexp ...) (string-append* (map str-flatten sub-sexp))]
+    [single single]))
 
 ;; TeX macro invocation
 ;; bs : Symbol × [String] → String
@@ -78,6 +83,9 @@
 
 (define (bold . texts)
   (~ (bs 'textbf texts )))
+
+(define (emph . texts)
+  (~ (bs 'emph texts )))
 
 (define-syntax-rule (items (item-parts ...) ...)
   (env 'itemize
@@ -139,9 +147,9 @@
   (~ "\\left|" elts "\\right|"))
 
 (define (∀ binder #:st [such-that #f] body)
-  (~ "∀" binder (if such-that (~ ", " such-that) "") "." body))
+  (~ "∀" binder (if such-that (~ ", " (text " s.t. ") such-that) "") ".~" body))
 (define (∃ binder #:st [such-that #f] body)
-  (~ "∃" binder (if such-that (~ ", " such-that) "") "." body))
+  (~ "∃" binder (if such-that (~ ", " (text " s.t. ") such-that) "") ".~" body))
 
 
 
@@ -155,7 +163,7 @@
 
 (define-syntax-rule (doc class args pkgs defs body ...)
   (display
-   (str-flatten
+   (sexp->tex
     (bso 'documentclass args class)
     (map (λ (pkg) (bs 'usepackage (symbol->string pkg))) pkgs)
     defs
@@ -201,8 +209,8 @@
      (if ((char->integer c) . <= . 127)
          (string c)
          (case c
-           [(#\〚) (mathify "[\\!\\![")]
-           [(#\〛) (mathify "]\\!\\!]")]
+           [(#\〚) (mathify "\\llbracket" #;"[\\!\\![")]
+           [(#\〛) (mathify "\\rrbracket" #;"]\\!\\!]")]
            [(#\u2011) "\\mbox{-}"] ; non-breaking hyphen
            [(#\uB0) (mathify "^{\\circ}")] ; degree
            [(#\uB2) (mathify "^2")]
@@ -497,5 +505,7 @@
            [(#\□) (mathify "\\square")]
            [(#\⊟) (mathify "\\boxminus")]
            [(#\⊩) (mathify "\\Vdash")]
+           [(#\⊪) (mathify "\\Vvdash")]
+           [(#\⊨) (mathify "\\vDash")]
            [(#\∖) (mathify "\\setminus")]
            [else (error (format "No rule for ~s" c))]))]))
