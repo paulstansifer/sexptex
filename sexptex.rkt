@@ -47,11 +47,11 @@
 
 ;; __ : Math → Math ∩ Text
 (define (__ . body)
-  ($ "_{" body "}"))
+  (if (empty? body) "" ($ "_{" body "}")))
 
 ;; ^^ : Math → Math ∩ Text
 (define (^^ . body)
-  ($ "^{" body "}"))
+  (if (empty? body) "" ($ "^{" body "}")))
 
 ;; ⋃ : Math × Math → Math ∩ Text
 (define (⋃ range body)
