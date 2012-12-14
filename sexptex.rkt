@@ -16,6 +16,12 @@
 ;;yes, it's used that much; it works as concatenation
 (define ~ list)
 
+(define (sym->tex sym)
+  (let rec ((res (sexp->tex (symbol->string sym)))
+            (bad-strs '("\\ensuremath" "\\" "{" "}")))
+    (if (empty? bad-strs)
+        res
+        (rec (string-replace res (car bad-strs) "-") (cdr bad-strs)))))
 
 
 (define (sexp->tex . sexp)
@@ -110,12 +116,44 @@
   (~ "\\[" (apply array `(,spec . ,chunks)) "\\]"))
 
 ;; named inference rule — requires mathpartir
-(define (top
-         . ---- . name
-         bot)
-  (bso 'inferrule* `(("right=" ,(bs 'textsc name)))
-       top
-       bot))
+(define (---- . args)
+  #;(top ...
+     . ---- . name
+     bot)
+  (match args
+    [`(,top ... ,name ,bot)
+     (bso 'inferrule* `(("right=" ,(bs 'textsc name)))
+          (j end top)
+          bot)]))
+
+
+
+#|
+ (define-struct theorem (id type name prop proof))
+ (define (thm id th #:name [name #f] prop proof)
+   (theorem id (if th "Theorem" "Lemma") name prop proof))
+
+;; these are for internal use
+;; TODO: make "section" user-choosable
+ (define (collect-theorem-defs sexp)
+   (match sexp
+      [(theorem id type name prop proof)
+       (~ (bs 'newtheorem (sym->tex id) type) "[section]")]
+      [`(,elts ...) (append* (map collect-theorem-defs elts))]
+      [str (~)]))
+ (define (use-theorem t)
+   (~ (env (theorem-id t) (if (theorem-name t) (~ "[" (theorem-name t) "]") "")
+           (theorem-prop t))
+      (env 'proof (theorem-proof t))))|#
+
+(define (ref-core id) (bs 'ref (sym->tex id)))
+(define (ref . ids)
+  (cond
+   [(= 1 (length ids)) (ref-core (car ids))]
+   [(= 2 (length ids)) (~ (ref-core (car ids)) " and " (ref-core (cadr ids)))]
+   [else (~ (j ", " (map ref-core (take ids (- (length ids) 1))))
+            " and "  (ref-core (last ids)))]))
+
 
 ;; function invocation
 (define (fn name . args)
