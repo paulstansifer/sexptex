@@ -82,12 +82,20 @@
   (~ "\\[" body "\\]"))
 
 (define (env name . body)
-  `(,(bs 'begin (symbol->string name)) "\n"
-    ,body "\n"
-    ,(bs 'end (symbol->string name)) "\n"))
+  `(,(bs 'begin (symbol->string name))
+    ,body
+    ,(bs 'end (symbol->string name))))
+
 
 (define end "\\\\\n")
 (define ¶ "\n\n")
+(define & "&")
+
+(define (endhere . body) (~ end body))
+(define (hereend . body) (~ body end))
+
+(define (&here . body) (~ & body))
+(define (here& . body) (~ body &))
 
 (define (ital . texts)
   (~ (bs 'textit texts )))
