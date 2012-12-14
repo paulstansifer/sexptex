@@ -31,10 +31,15 @@
     ;(string->list (str-flatten sexp))
     (string->list (string-append* (flatten sexp))))))
 
-(define (str-flatten . sexp) ;; why does this diverge?
+(define (str-flatten . sexps)
+  (string-append* (map translate-char (string->list (str-flatten-rec sexps)))))
+(define (str-flatten-rec sexp)
   (match sexp
-    [`(,sub-sexp ...) (string-append* (map str-flatten sub-sexp))]
-    [single single]))
+    [`(,sub-sexp ...) (string-append* (map str-flatten-rec sub-sexp))]
+    [single (cond
+             [(procedure? single) (str-flatten-rec (single))]
+             [(number? single) (number->string single)]
+             [else single])]))
 
 ;; TeX macro invocation
 ;; bs : Symbol × [String] → String
@@ -201,7 +206,7 @@
 
 (define-syntax-rule (doc class args pkgs defs body ...)
   (display
-   (sexp->tex
+   (str-flatten
     (bso 'documentclass args class)
     (map (λ (pkg) (bs 'usepackage (symbol->string pkg))) pkgs)
     defs
