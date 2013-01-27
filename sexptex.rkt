@@ -165,7 +165,7 @@
    [(= 1 (length ids)) (ref-core (car ids))]
    [(= 2 (length ids)) (~ (ref-core (car ids)) " and " (ref-core (cadr ids)))]
    [else (~ (j ", " (map ref-core (take ids (- (length ids) 1))))
-            " and "  (ref-core (last ids)))]))
+            ", and "  (ref-core (last ids)))]))
 
 
 ;; function invocation
@@ -189,18 +189,19 @@
 (define |[]| |[|)
 (define |{}| |{|)
 (define 〈〉 angle)
-(define (〚〛 . elts) ;;requires stmaryrd
-  (~ "\\left〚" elts "\\right〛"))
-(define interp 〚〛)
 
-
-(define (abs . elts)
-  (~ "\\left|" elts "\\right|"))
-
-(define (∀ binder #:st [such-that #f] body)
-  (~ "∀" binder (if such-that (~ ", " (text " s.t. ") such-that) "") ".~" body))
-(define (∃ binder #:st [such-that #f] body)
-  (~ "∃" binder (if such-that (~ ", " (text " s.t. ") such-that) "") ".~" body))
+(define (∀ binder #:st [such-that #f] #:it [if-then #f] body)
+  (~ "∀" binder
+     (if such-that (~ ", " (text " s.t. ") such-that) "")
+     ".~"
+     (if if-then (~ (text "if ") if-then (text ", then ")) "")
+     body))
+(define (∃ binder #:st [such-that #f] #:it [if-then #f] body)
+  (~ "∃" binder
+     (if such-that (~ ", " (text " s.t. ") such-that) "")
+     ".~"
+     (if if-then (~ (text "if ") if-then (text ", then ")) "")
+     body))
 
 
 
@@ -334,7 +335,7 @@
            [(#\♠) (mathify "\\spadesuit")]
            [(#\♣) (mathify "\\clubsuit")]
            [(#\♥) (mathify "\\heartsuit")]
-           [(#\♯) (mathify "\\#")] ;;we want this more than we wand a sharp sign
+           [(#\♯) (mathify "\\mathrel{\\#}")] ;;we want this more than we want a sharp
            [(#\♭) (mathify "\\flat")]
            [(#\♮) (mathify "\\natural")]
            [(#\√) (mathify "\\surd")]
